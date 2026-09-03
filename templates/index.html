@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IVR Voice Studio</title>
+  <link rel="stylesheet" href="/static/style.css?v=5">
+</head>
+<body class="with-sidebar">{% include "sidebar.html" %}
+  <main class="shell">
+    <header><div><span class="eyebrow">DIALER AUDIO WORKSPACE</span><h1>IVR Voice Studio</h1><p>Create clear, telephone-ready prompts in Indian and English voices.</p></div></header>
+    <section class="grid">
+      <article class="card composer">
+        <div class="card-title"><div><span>01</span><h2>Create voice prompt</h2></div><small id="charCount">0 / 5,000</small></div>
+        <label>IVR script<textarea id="script" maxlength="5000" placeholder="Example: Thank you for calling Acme. Press 1 for sales, press 2 for support."></textarea></label>
+        <div class="row">
+          <label>Voice<select id="voice">{% for id, voice in voices.items() %}<option value="{{ id }}">{{ voice.language }} · {{ voice.gender }}</option>{% endfor %}</select></label>
+          <label>File name<input id="name" placeholder="welcome_message"></label>
+        </div>
+        <div class="row thirds">
+          <label>Speed<select id="rate"><option value="-20%">Slow</option><option value="+0%" selected>Normal</option><option value="+15%">Fast</option></select></label>
+          <label>Pitch<select id="pitch"><option value="-10Hz">Low</option><option value="+0Hz" selected>Normal</option><option value="+10Hz">High</option></select></label>
+          <label>Dialer format<select id="format"><option value="wav8">WAV · 8 kHz mono</option><option value="gsm">GSM · 8 kHz mono</option><option value="wav8ulaw">WAV · 8 kHz μ-law</option><option value="wav16">WAV · 16 kHz mono</option><option value="mp3">MP3 · 128 kbps</option></select></label>
+        </div>
+        <button id="generate" class="primary">Generate voice <b>→</b></button>
+      </article>
+      <aside>
+        <article class="card import-card"><div class="card-title"><div><span>02</span><h2>Convert audio</h2></div></div><p>Drop an existing recording and make it dialer-compatible.</p><label class="drop"><input type="file" id="upload" accept="audio/*,.mp4"><strong>Choose audio file</strong><em id="fileName">WAV, MP3, M4A, OGG or FLAC</em></label><label>Output format<select id="convertFormat"><option value="wav8">WAV · 8 kHz mono</option><option value="gsm">GSM · 8 kHz mono</option><option value="wav8ulaw">WAV · 8 kHz μ-law</option><option value="wav16">WAV · 16 kHz mono</option><option value="mp3">MP3 · 128 kbps</option></select></label><button id="convert" class="secondary">Convert audio</button></article>
+        <article class="card tip"><strong>Dialer tip</strong><p>Most PBX and outbound dialers accept 8 kHz, mono, 16-bit PCM WAV. Choose μ-law only when your provider specifically requests it.</p></article>
+      </aside>
+    </section>
+    <section class="card library"><div class="card-title"><div><span>03</span><h2>Audio library</h2></div><button id="refresh" class="ghost">Refresh</button></div><div id="empty" class="empty">Your generated and converted files will appear here.</div><div id="items"></div></section>
+  </main>
+  <div id="toast" role="status"></div>
+  <script src="/static/app.js?v=4"></script>
+</body></html>
