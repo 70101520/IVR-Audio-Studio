@@ -9,7 +9,7 @@ import shutil
 import sqlite3
 import subprocess
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import edge_tts
@@ -312,11 +312,40 @@ def profile_page(): return render_template("profile.html", is_admin=session.get(
 @app.get("/api/dashboard")
 @login_required
 def dashboard_api():
-    with database() as c:
-        metrics={"users":c.execute("SELECT COUNT(*) FROM users WHERE is_active=1").fetchone()[0],"logins":c.execute("SELECT COUNT(*) FROM events WHERE event_type='login'").fetchone()[0],"created":c.execute("SELECT COUNT(*) FROM events WHERE event_type='audio_created'").fetchone()[0],"downloads":c.execute("SELECT COUNT(*) FROM events WHERE event_type='download'").fetchone()[0]}
-        daily=[dict(r) for r in c.execute("SELECT substr(created,1,10) day,COUNT(*) count FROM events WHERE event_type='audio_created' GROUP BY day ORDER BY day DESC LIMIT 7")]
-        recent=[dict(r) for r in c.execute("SELECT username,event_type,detail,created FROM events ORDER BY id DESC LIMIT 12")]
-    return jsonify(metrics=metrics,daily=list(reversed(daily)),recent=recent)
+    today = date.today()
+    audio = library_items()
+    daily_counts = {(today - timedelta(days=offset)).isoformat(): 0 for offset in range(6, -1, -1)}
+    for item in audio:
+        day = str(item.get("created", ""))[:10]
+        if day in daily_counts:
+            daily_counts[day] += 1
+    with database() as connection:
+        logins = connection.execute("SELECT COUNT(*) FROM events WHERE event_type='login'").fetchone()[0]
+    disk = shutil.disk_usage(BASE_DIR)
+    memory_percent = 0
+    try:
+        meminfo = {}
+        for line in Path("/proc/meminfo").read_text().splitlines():
+            key, value = line.split(":", 1)
+            meminfo[key] = int(value.strip().split()[0])
+        memory_percent = round((1 - meminfo.get("MemAvailable", 0) / meminfo["MemTotal"]) * 100, 1)
+    except (OSError, KeyError, ValueError, ZeroDivisionError):
+        pass
+    try:
+        processes = sum(1 for entry in Path("/proc").iterdir() if entry.name.isdigit())
+    except OSError:
+        processes = 0
+    metrics = {
+        "logins": {"value": logins, "unit": "events", "detail": "Successful portal sign-ins"},
+        "today_audio": {"value": daily_counts[today.isoformat()], "unit": "files", "detail": "Created today"},
+        "total_audio": {"value": len(audio), "unit": "files", "detail": "Stored on server"},
+        "processes": {"value": processes, "unit": "running", "detail": "Server processes"},
+        "ram": {"value": memory_percent, "unit": "% used", "detail": "System memory"},
+        "disk": {"value": round(disk.used / disk.total * 100, 1), "unit": "% used", "detail": f"{disk.free / 1073741824:.1f} GB free"},
+        "status": {"value": "Online", "unit": "healthy", "detail": "IVR service available"},
+    }
+    daily = [{"day": day, "count": count} for day, count in daily_counts.items()]
+    return jsonify(metrics=metrics, daily=daily)
 @app.post("/api/profile/password")
 @login_required
 def profile_password():
