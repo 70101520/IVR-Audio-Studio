@@ -29,7 +29,7 @@ INDEX_FILE = DATA_DIR / "library.json"
 DATABASE_FILE = DATA_DIR / "users.db"
 SECRET_FILE = DATA_DIR / ".session_secret"
 MAX_TEXT_LENGTH = 5000
-ALLOWED_UPLOADS = {"wav", "mp3", "m4a", "aac", "ogg", "flac", "webm", "mp4"}
+ALLOWED_UPLOADS = {"wav", "mp3", "m4a", "aac", "ogg", "flac", "webm", "mp4", "mpeg", "mpg"}
 
 for directory in (DATA_DIR, LIBRARY_DIR, TEMP_DIR):
     directory.mkdir(parents=True, exist_ok=True)
@@ -67,6 +67,8 @@ FORMATS = {
     "wav8ulaw": {"ext": "wav", "args": ["-ar", "8000", "-ac", "1", "-c:a", "pcm_mulaw"]},
     "gsm": {"ext": "gsm", "args": ["-ar", "8000", "-ac", "1", "-c:a", "libgsm"]},
     "mp3": {"ext": "mp3", "args": ["-ar", "44100", "-ac", "1", "-b:a", "128k"]},
+    "mpeg": {"ext": "mp3", "args": ["-ar", "44100", "-ac", "1", "-c:a", "libmp3lame", "-b:a", "128k"]},
+    "ogg": {"ext": "ogg", "args": ["-ar", "44100", "-ac", "1", "-c:a", "libvorbis", "-q:a", "5"]},
 }
 
 
