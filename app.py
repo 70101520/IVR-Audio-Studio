@@ -59,6 +59,7 @@ VOICES = {
     "ml-IN-SobhanaNeural": {"language": "Malayalam", "gender": "Female"},
     "ur-IN-GulNeural": {"language": "Urdu", "gender": "Female"},
     "ne-NP-HemkalaNeural": {"language": "Nepali", "gender": "Female"},
+    "ne-NP-SagarNeural": {"language": "Nepali", "gender": "Male"},
 }
 
 FORMATS = {
