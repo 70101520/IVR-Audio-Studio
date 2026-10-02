@@ -335,7 +335,13 @@ def dashboard_api():
         processes = sum(1 for entry in Path("/proc").iterdir() if entry.name.isdigit())
     except OSError:
         processes = 0
+    cpu_count = os.cpu_count() or 1
+    try:
+        cpu_percent = round(min(100, os.getloadavg()[0] / cpu_count * 100), 1)
+    except (AttributeError, OSError):
+        cpu_percent = 0
     metrics = {
+        "cpu": {"value": cpu_percent, "unit": "% load", "detail": f"{cpu_count} CPU cores"},
         "logins": {"value": logins, "unit": "events", "detail": "Successful portal sign-ins"},
         "today_audio": {"value": daily_counts[today.isoformat()], "unit": "files", "detail": "Created today"},
         "total_audio": {"value": len(audio), "unit": "files", "detail": "Stored on server"},
